@@ -89,13 +89,20 @@ namespace RepresentativesSet
                 {
                     _fCurrentOptimalSet[i] = _fCurrentSet[i];
                 }
+                if (_fCurrentPosition < _fCurrentSet.Count - 1)
+                {
+                    for (int i = _fCurrentPosition + 1; i < _fCurrentSet.Count; i++)
+                    {
+                        _fCurrentOptimalSet[i] = 0;
+                    }
+                }
                 currentMinimum = candidatValue;
                 _fOptimalSets.Clear();
             }
             List<int> result = new List<int>();
             for (int i = 0; i < _fCurrentSet.Count; i++)
             {
-                if (_fCurrentSet[i] != 0)
+                if (_fCurrentSet[i] == 1)
                     result.Add(i);
             }
             _fOptimalSets.Add(string.Join(",", result));

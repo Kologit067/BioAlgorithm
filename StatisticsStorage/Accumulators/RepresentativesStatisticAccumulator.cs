@@ -91,12 +91,7 @@ namespace StatisticsStorage.Accumulators
             _representativesPerfomances.Clear();
         }
         //--------------------------------------------------------------------------------------------------------------------
-        public string Delete(string algorithm)
-        {
-            return _representativesSaver.Delete(algorithm, _numberOfSet, _dimension, _step);
-        }
-        //--------------------------------------------------------------------------------------------------------------------
-        public string DeleteAlgorithm(string algorithm, int? numberOfSet = null, int? dimension = null, decimal? step = null)
+        public string Delete(string algorithm, int? numberOfSet = null, int? dimension = null, decimal? step = null)
         {
             return _representativesSaver.Delete(algorithm, numberOfSet, dimension, step);
         }
@@ -147,7 +142,7 @@ namespace StatisticsStorage.Accumulators
         {
         }
         //--------------------------------------------------------------------------------------------------------------------
-        public string Delete(string algorithm)
+        public string Delete(string algorithm, int? numberOfSet = null, int? dimension = null, decimal? step = null)
         {
             return "";
         }

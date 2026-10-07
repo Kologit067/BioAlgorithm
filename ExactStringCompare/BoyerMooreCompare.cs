@@ -186,7 +186,7 @@ namespace ExactStringCompare
             StatisticAccumulator.CreateStatistics(text, pattern);
 
 #if (DEBUG)
-            elapsedTicksList.Clear();
+//            elapsedTicksList.Clear();
             coreProcess = 0;
             dictionaryProcess = 0;
             outerLoop = 0;
@@ -196,13 +196,13 @@ namespace ExactStringCompare
 
             result.Clear();
 #if (DEBUG)
-            elapsedTicksList.Add(stopwatch.ElapsedTicks);
+            //elapsedTicksList.Add(stopwatch.ElapsedTicks);
 #endif
             BadSymbolAdvPreprocessString(pattern);
             int lenPattern = pattern.Length;
             int i = 0;
 #if (DEBUG)
-            elapsedTicksList.Add(stopwatch.ElapsedTicks);
+           // elapsedTicksList.Add(stopwatch.ElapsedTicks);
 #endif
             while (i <= text.Length - pattern.Length)
             {
@@ -276,7 +276,7 @@ namespace ExactStringCompare
                     }
                 }
 #if (DEBUG)
-                elapsedTicksList.Add(stopwatch.ElapsedTicks);
+               // elapsedTicksList.Add(stopwatch.ElapsedTicks);
 #endif
             }
 

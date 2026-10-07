@@ -172,9 +172,9 @@ namespace RepresentativesSet.Greedy.Tests
             representativesGreedy = new RepresentativesGreedySimple();
 
             _statisticAccumulator = new RepresentativesStatisticAccumulator(new RepresentativesSaver(), pLength, pCardinality);
-            _statisticAccumulator.DeleteAlgorithm(branchAndBound.AlgorithmName);
+            _statisticAccumulator.Delete(branchAndBound.AlgorithmName, pLength, pCardinality, 1);
             _greedyStatisticAccumulator = new RepresentativesStatisticAccumulator(new RepresentativesSaver(), pLength, pCardinality);
-            _greedyStatisticAccumulator.DeleteAlgorithm(representativesGreedy.AlgorithmName);
+            _greedyStatisticAccumulator.Delete(representativesGreedy.AlgorithmName, pLength, pCardinality, 1);
 
             representativesGreedy.StatisticAccumulator = _greedyStatisticAccumulator;
             branchAndBound .StatisticAccumulator = _statisticAccumulator;
@@ -256,13 +256,13 @@ namespace RepresentativesSet.Greedy.Tests
             representativesGreedyImpRD = new RepresentativesGreedyImproveRD();
 
             _statisticAccumulator = new RepresentativesStatisticAccumulator(new RepresentativesSaver(), pLength, pCardinality);
-            _statisticAccumulator.DeleteAlgorithm(branchAndBound.AlgorithmName);
+            _statisticAccumulator.Delete(branchAndBound.AlgorithmName, pLength, pCardinality, 1);
             _greedyStatisticAccumulator = new RepresentativesStatisticAccumulator(new RepresentativesSaver(), pLength, pCardinality);
-            _greedyStatisticAccumulator.DeleteAlgorithm(representativesGreedy.AlgorithmName);
+            _greedyStatisticAccumulator.Delete(representativesGreedy.AlgorithmName, pLength, pCardinality, 1);
             _greedyImpStatisticAccumulator = new RepresentativesStatisticAccumulator(new RepresentativesSaver(), pLength, pCardinality);
-            _greedyImpStatisticAccumulator.DeleteAlgorithm(representativesGreedyImp.AlgorithmName);
+            _greedyImpStatisticAccumulator.Delete(representativesGreedyImp.AlgorithmName, pLength, pCardinality, 1);
             _greedyImpRDStatisticAccumulator = new RepresentativesStatisticAccumulator(new RepresentativesSaver(), pLength, pCardinality);
-            _greedyImpRDStatisticAccumulator.DeleteAlgorithm(representativesGreedyImpRD.AlgorithmName);
+            _greedyImpRDStatisticAccumulator.Delete(representativesGreedyImpRD.AlgorithmName, pLength, pCardinality, 1);
 
             representativesGreedy.StatisticAccumulator = _greedyStatisticAccumulator;
             representativesGreedyImp.StatisticAccumulator = _greedyImpStatisticAccumulator;
@@ -342,9 +342,9 @@ namespace RepresentativesSet.Greedy.Tests
             branchAndBound = new RepresentativesBranchAndBoundByValue(_fCardinality);
 
             _statisticAccumulator = new RepresentativesStatisticAccumulator(new RepresentativesSaver(), pLength, pCardinality,1, bufferSize);
-            _statisticAccumulator.DeleteAlgorithm(branchAndBound.AlgorithmName, pLength, pCardinality,1);
+            _statisticAccumulator.Delete(branchAndBound.AlgorithmName, pLength, pCardinality,1);
             _greedyStatisticAccumulator = new RepresentativesStatisticAccumulator(new RepresentativesSaver(), pLength, pCardinality, 1, bufferSize);
-            _greedyStatisticAccumulator.DeleteAlgorithm(representativesGreedy.AlgorithmName, pLength, pCardinality, 1);
+            _greedyStatisticAccumulator.Delete(representativesGreedy.AlgorithmName, pLength, pCardinality, 1);
 
             representativesGreedy.StatisticAccumulator = _greedyStatisticAccumulator;
             branchAndBound.StatisticAccumulator = _statisticAccumulator;

@@ -1,6 +1,5 @@
 ﻿using BioAlgorithmViewModel.BipartiteGraphModel;
 using BioAlgorithmViewModel.Common;
-using BioAlgorithmViewModel.Mappings;
 using BioAlgorithmViewModel.Representatives.Messages;
 using BioAlgorithmViewModel.Representatives.Utility;
 using Representatives.Data;

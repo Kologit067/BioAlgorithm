@@ -6,7 +6,7 @@ using System.Linq;
 using BioAlgorythmModel.RepresentativesModel;
 using Dapper;
 using System;
-using System.Collections;
+using System.Threading.Tasks;
 
 namespace Representatives.Data
 {
@@ -15,47 +15,78 @@ namespace Representatives.Data
     //----------------------------------------------------------------------------------------------------------------------
     public class RepresentativesRepository
     {
-        private string connectionString;
-        public RepresentativesRepository()
+        private readonly string _connectionString;
+        public RepresentativesRepository(string connectionString = null)
         {
-            connectionString = ConfigurationManager.ConnectionStrings["BioAlgorithm"].ConnectionString;
+            if (string.IsNullOrEmpty(connectionString))
+            {
+                _connectionString = ConfigurationManager.ConnectionStrings["BioAlgorithm"].ConnectionString;
+            }
+            else
+            {
+                _connectionString = connectionString;
+            }
         }
 
         public void DeleteRepresentativeAlgorithmGroup(RepresentativeAlgorithmGroupDimension selectedAlgorithmGroup)
         {
-            using (IDbConnection db = new SqlConnection(connectionString))
-            {
-                string sql = $@"DELETE FROM [BioAlgorithm].[dbo].[RepresentativesPerfomance]
-WHERE [Algorithm] = '{selectedAlgorithmGroup.Algorithm}' AND [NumberOfSet] = {selectedAlgorithmGroup.NumberOfSet} 
-AND [Dimension] = {selectedAlgorithmGroup.Dimension} AND [Step] = {selectedAlgorithmGroup.Step}
-";
-                db.Execute(sql);
-            }
+            Delete(selectedAlgorithmGroup.Algorithm, selectedAlgorithmGroup.NumberOfSet, selectedAlgorithmGroup.Dimension, selectedAlgorithmGroup.Step);
         }
+
+        public string Delete(string algorithm, int? numberOfSet = null, int? dimension = null, decimal? step = null)
+        {
+            string error = null;
+
+
+            SqlConnection connection = new SqlConnection(_connectionString);
+            connection.Open();
+            try
+            {
+                SqlCommand addCommand = new SqlCommand("dbo.deleteRepresentativesPerfomance", connection);
+                addCommand.CommandType = CommandType.StoredProcedure;
+                addCommand.CommandTimeout = 300;
+                SqlParameter tvpParam2 = addCommand.Parameters.AddWithValue("@Dimension", dimension);
+                tvpParam2.SqlDbType = SqlDbType.Int;
+                SqlParameter tvpParam3 = addCommand.Parameters.AddWithValue("@Algorithm", algorithm);
+                tvpParam3.SqlDbType = SqlDbType.VarChar;
+                SqlParameter tvpParam = addCommand.Parameters.AddWithValue("@NumberOfSet", numberOfSet);
+                tvpParam.SqlDbType = SqlDbType.Int;
+                SqlParameter tvpParam4 = addCommand.Parameters.AddWithValue("@Step", step);
+                tvpParam4.SqlDbType = SqlDbType.BigInt;
+                addCommand.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                error = ex.ToString();
+            }
+            finally
+            {
+                connection.Close();
+            }
+            return error;
+
+        }
+
 
         public void DeleteRepresentativeAlgorithm(RepresentativeAlgorithmGroup selectedAlgorithm)
         {
-            using (IDbConnection db = new SqlConnection(connectionString))
-            {
-                string sql = $@"DELETE FROM [BioAlgorithm].[dbo].[RepresentativesPerfomance]
-WHERE [Algorithm] = '{selectedAlgorithm.Algorithm}' 
-";
-                db.Execute(sql);
-            }
+            Delete(selectedAlgorithm.Algorithm);
         }
-        public List<RepresentativeAlgorithmGroupDimension> GetRepresentativeAlgorithmGroupDimensions(string algorithmGroupListSort)
+        public async Task<List<RepresentativeAlgorithmGroupDimension>> GetRepresentativeAlgorithmGroupDimensions(string algorithmGroupListSort)
         {
             List<RepresentativeAlgorithmGroupDimension> algorithmGroups = new List<RepresentativeAlgorithmGroupDimension>();
-            using (IDbConnection db = new SqlConnection(connectionString))
+            using (IDbConnection db = new SqlConnection(_connectionString))
             {
-                algorithmGroups = db.Query<RepresentativeAlgorithmGroupDimension>(
-                    $@"SELECT [Algorithm], [NumberOfSet], [Dimension], [Step], COUNT(*) as TotalCount, 
+                string sql = $@"SELECT [Algorithm], [NumberOfSet], [Dimension], [Step], COUNT(*) as TotalCount, 
        SUM([NumberOfIteration]) as NumberOfIteration, SUM([Duration]) as TotalDuration,
 	   SUM([Duration])/COUNT(*) as AverageDuration
-FROM [BioAlgorithm].[dbo].[RepresentativesPerfomance]
+FROM [dbo].[RepresentativesPerfomance] AS rp
+INNER JOIN [dbo].[RepresentativesInput] AS ri
+ON (rp.RepresentativesInputId = ri.RepresentativesInputId)
 GROUP BY [Algorithm], [NumberOfSet], [Dimension], [Step]
 ORDER BY {algorithmGroupListSort}
-").ToList();
+";
+                algorithmGroups = (await db.QueryAsync<RepresentativeAlgorithmGroupDimension>(sql, commandTimeout: 180)).ToList();
             }
             return algorithmGroups;
         }
@@ -63,11 +94,13 @@ ORDER BY {algorithmGroupListSort}
         public List<RepresentativeAlgorithWithDimension> GetRepresentativeAlgorithmWithDimensions()
         {
             List<RepresentativeAlgorithWithDimension> algorithmWithDimensions = new List<RepresentativeAlgorithWithDimension>();
-            using (IDbConnection db = new SqlConnection(connectionString))
+            using (IDbConnection db = new SqlConnection(_connectionString))
             {
                 algorithmWithDimensions = db.Query<RepresentativeAlgorithWithDimension>(
                     $@"SELECT [Algorithm], [NumberOfSet], [Dimension], [Step]
-FROM [BioAlgorithm].[dbo].[RepresentativesPerfomance]
+FROM [BioAlgorithm].[dbo].[RepresentativesPerfomance] AS rp
+INNER JOIN [dbo].[RepresentativesInput] AS ri
+ON (rp.RepresentativesInputId = ri.RepresentativesInputId)
 GROUP BY [Algorithm], [NumberOfSet], [Dimension], [Step]
 ").ToList();
             }
@@ -77,13 +110,15 @@ GROUP BY [Algorithm], [NumberOfSet], [Dimension], [Step]
         public List<RepresentativeAlgorithmGroup> GetRepresentativeAlgorithmGroups()
         {
             List<RepresentativeAlgorithmGroup> algorithmGroups = new List<RepresentativeAlgorithmGroup>();
-            using (IDbConnection db = new SqlConnection(connectionString))
+            using (IDbConnection db = new SqlConnection(_connectionString))
             {
                 algorithmGroups = db.Query<RepresentativeAlgorithmGroup>(
                     @"WITH CTE AS
 (
-SELECT RepresentativesPerfomanceId, [Algorithm], [NumberOfSet], [Dimension], COUNT(*) as cnt, SUM([NumberOfIteration]) as SumNumberOfIteration, SUM([Duration]) as SumDuration
-FROM [BioAlgorithm].[dbo].[RepresentativesPerfomance]
+SELECT [Algorithm], [NumberOfSet], [Dimension], COUNT(*) as cnt, SUM([NumberOfIteration]) as SumNumberOfIteration, SUM([Duration]) as SumDuration
+FROM [BioAlgorithm].[dbo].[RepresentativesPerfomance] AS rp
+INNER JOIN [dbo].[RepresentativesInput] AS ri
+ON (rp.RepresentativesInputId = ri.RepresentativesInputId)
 GROUP BY [Algorithm], [NumberOfSet], [Dimension]
 )
 SELECT [Algorithm], 
@@ -168,33 +203,20 @@ GROUP BY [Algorithm]").ToList();
                 where = "WHERE " + string.Join(" AND ", whereList);
             }
             List<RepresentativesPerfomance> representativesPerfomances = new List<RepresentativesPerfomance>();
-            using (IDbConnection db = new SqlConnection(connectionString))
+            using (IDbConnection db = new SqlConnection(_connectionString))
             {
                 string query = $@"SELECT {top} [RepresentativesPerfomanceId]
-      ,[NumberOfSet]
-      ,[Dimension]
-      ,[Step]
-      ,[InputLen]
-      ,[InputLenSort]
-      ,[InputLenAvg]
-      ,[InputData]
-      ,[InputDataShort]
-      ,[Algorithm]
-      ,[NumberOfIteration]
-      ,[Duration]
-      ,[DurationMilliSeconds]
-      ,[DateComplete]
-      ,[IsComplete]
-      ,[LastRoute]
-      ,[OptimalRoute]
-      ,[CountTerminal]
-      ,[BestValue]
-      ,[UpdateOptcount]
-      ,[ElemenationCount]
-FROM [BioAlgorithm].[dbo].[RepresentativesPerfomance]
+      ,[NumberOfSet],[Dimension],[Step],[InputLen],[InputLenSort]
+      ,[InputLenAvg],[InputData],[InputDataShort],[Algorithm],[NumberOfIteration]
+	  ,[Duration],[DurationMilliSeconds],[DateComplete],[IsComplete]
+      ,[LastRoute],[OptimalRoute],[CountTerminal],[BestValue]
+      ,[UpdateOptcount],[ElemenationCount]
+FROM [BioAlgorithm].[dbo].[RepresentativesPerfomance] AS rp
+INNER JOIN [dbo].[RepresentativesInput] AS ri
+ON (rp.RepresentativesInputId = ri.RepresentativesInputId)
 {where}
 ORDER BY {order}";
-                representativesPerfomances = db.Query<RepresentativesPerfomance>(query).ToList();
+                representativesPerfomances = db.Query<RepresentativesPerfomance>(query, commandTimeout: 180).ToList();
             }
             return representativesPerfomances;
         }
@@ -243,21 +265,36 @@ ORDER BY {order}";
                 where = "WHERE " + string.Join(" AND ", whereList);
             }
             List<RepresentativesPerfomanceCompare> representativesPerfomancesCompare = new List<RepresentativesPerfomanceCompare>();
-            string query = $@"SELECT ra.[NumberOfSet], ra.[Dimension], ra.[InputData], ra.[InputDataShort], ra.Step,
+            string query = $@"WITH ra AS
+(
+SELECT ria.[NumberOfSet], ria.[Dimension], ria.[InputData], ria.[InputDataShort], ria.Step,
+       rpa.Algorithm, rpa.BestValue, rpa.OptimalRoute, rpa.[NumberOfIteration],rpa.[Duration], rpa.ElemenationCount
+FROM [BioAlgorithm].[dbo].[RepresentativesPerfomance] AS rpa
+INNER JOIN [dbo].[RepresentativesInput] AS ria
+ON (rpa.RepresentativesInputId = ria.RepresentativesInputId)
+),
+rb AS
+(
+SELECT rib.[NumberOfSet], rib.[Dimension], rib.[InputData], rib.[InputDataShort], rib.Step,
+       rpb.Algorithm, rpb.BestValue, rpb.OptimalRoute, rpb.[NumberOfIteration], rpb.[Duration], rpb.ElemenationCount
+FROM [BioAlgorithm].[dbo].[RepresentativesPerfomance] AS rpb
+INNER JOIN [dbo].[RepresentativesInput] AS rib
+ON (rpb.RepresentativesInputId = rib.RepresentativesInputId)
+)
+SELECT ra.[NumberOfSet], ra.[Dimension], ra.[InputData], ra.[InputDataShort], ra.Step,
        ra.Algorithm as Algorithm1, rb.Algorithm as Algorithm2, 
        ra.BestValue as BestValue1, rb.BestValue as BestValue2, 
 	   ra.OptimalRoute as OptimalRoute1, rb.OptimalRoute as OptimalRoute2,
 	   ra.[NumberOfIteration] as NumberOfIteration1, rb.[NumberOfIteration] as NumberOfIteration2,
        ra.[Duration] as Duration1, rb.[Duration] as Duration2,
        ra.ElemenationCount as ElemenationCount1, rb.ElemenationCount as ElemenationCount2
-FROM [BioAlgorithm].[dbo].[RepresentativesPerfomance] AS ra
-INNER JOIN [BioAlgorithm].[dbo].[RepresentativesPerfomance] rb
+FROM ra INNER JOIN rb
 ON (ra.InputData = rb.InputData AND ra.[NumberOfSet] = rb.[NumberOfSet] AND ra.[Dimension] = rb.[Dimension] AND
 ra.[Algorithm] = '{representativesPerfomanceCompareFilter.Algorithm1}' AND rb.[Algorithm] = '{representativesPerfomanceCompareFilter.Algorithm2}') 
 {where}
 ";
 
-            using (IDbConnection db = new SqlConnection(connectionString))
+            using (IDbConnection db = new SqlConnection(_connectionString))
             {
                 representativesPerfomancesCompare = db.Query<RepresentativesPerfomanceCompare>(query).ToList();
             }
@@ -265,27 +302,27 @@ ra.[Algorithm] = '{representativesPerfomanceCompareFilter.Algorithm1}' AND rb.[A
         }
         private int updateIsomorphicBufferSize = 1000;
         private Dictionary<long,string> updateIsomorphicDict = new Dictionary<long,string>();
-        public string UpdateIsomorphic(long representativesPerfomanceId, string inputData)
+        public string UpdateIsomorphic(long representativesInputId, string inputData, bool isBipart = false)
         {
             string error = string.Empty;
-            updateIsomorphicDict.Add(representativesPerfomanceId, inputData);
+            updateIsomorphicDict.Add(representativesInputId, inputData);
 
             if (updateIsomorphicDict.Count >= updateIsomorphicBufferSize)
             {
-                error = SaveUpdateIsomorphic(updateIsomorphicDict);
+                error = SaveUpdateIsomorphic(updateIsomorphicDict, isBipart);
                 updateIsomorphicDict.Clear();
             }
             return error;
         }
 
-        public string CompleteUpdateIsomorphic()
+        public string CompleteUpdateIsomorphic(bool isBipart = false)
         {
-            string error = SaveUpdateIsomorphic(updateIsomorphicDict);
+            string error = SaveUpdateIsomorphic(updateIsomorphicDict, isBipart);
             updateIsomorphicDict.Clear();
             return error;
         }
 
-        private string SaveUpdateIsomorphic(Dictionary<long, string> updateIsomorphicDict)
+        private string SaveUpdateIsomorphic(Dictionary<long, string> updateIsomorphicDict, bool isBipart = false)
         {
             string error = string.Empty;
             try
@@ -301,16 +338,18 @@ ra.[Algorithm] = '{representativesPerfomanceCompareFilter.Algorithm1}' AND rb.[A
                     isonorphicTable.Rows.Add(ui.Key, ui.Value);
                 }
 
-                SqlConnection connection = new SqlConnection(connectionString);
+                SqlConnection connection = new SqlConnection(_connectionString);
                 connection.Open();
                 try
                 {
-                    SqlCommand addCommand = new SqlCommand("spUpdateIsomorphic", connection);
+                    SqlCommand addCommand = new SqlCommand("dbo.spUpdateIsomorphic", connection);
                     addCommand.CommandType = CommandType.StoredProcedure;
                     addCommand.CommandTimeout = 300;
                     SqlParameter tvpParam = addCommand.Parameters.AddWithValue("@UpdateIsomorphic", isonorphicTable);
                     tvpParam.SqlDbType = SqlDbType.Structured;
                     tvpParam.TypeName = "dbo.UpdateIsomorphicType";
+                    SqlParameter tvpParam2 = addCommand.Parameters.AddWithValue("@Dimension", isBipart);
+                    tvpParam2.SqlDbType = SqlDbType.Bit;
                     addCommand.ExecuteNonQuery();
                 }
                 finally
@@ -325,24 +364,10 @@ ra.[Algorithm] = '{representativesPerfomanceCompareFilter.Algorithm1}' AND rb.[A
             return error;
         }
 
-        /*
-        public void UpdateIsomorphic(long representativesPerfomanceId, string inputData)
-        {
-            string query = $"UPDATE [dbo].[RepresentativesPerfomance]\r\nSET [Isomorphic] = '{inputData}'\r\nWHERE [RepresentativesPerfomanceId] = {representativesPerfomanceId}";
-            using (IDbConnection db = new SqlConnection(connectionString))
-            {
-                db.Execute(query);
-            }
-        }
-        */
-        public void ClearIsomorphic(RepresentativesPerfomanceFilter representativesPerfomanceFilter)
+        public void ClearIsomorphic(RepresentativesPerfomanceFilter representativesPerfomanceFilter, bool isBipart = false)
         {
             string where = "";
             List<string> whereList = new List<string>();
-            if (!string.IsNullOrWhiteSpace(representativesPerfomanceFilter.Algorithm))
-            {
-                whereList.Add($"[Algorithm] = '{representativesPerfomanceFilter.Algorithm}'");
-            }
             if (representativesPerfomanceFilter.NumberOfSet.HasValue)
             {
                 whereList.Add($"[NumberOfSet] = {representativesPerfomanceFilter.NumberOfSet}");
@@ -359,12 +384,23 @@ ra.[Algorithm] = '{representativesPerfomanceCompareFilter.Algorithm1}' AND rb.[A
             {
                 where = "WHERE " + string.Join(" AND ", whereList);
             }
-            using (IDbConnection db = new SqlConnection(connectionString))
+            using (IDbConnection db = new SqlConnection(_connectionString))
             {
-                string query = $@"UPDATE [dbo].[RepresentativesPerfomance]
-SET [ElemenationCount] = NULL
+                string query = string.Empty;
+                if (!isBipart)
+                {
+                    query = $@"UPDATE [dbo].[RepresentativesInput]
+SET [Isomorphic] = NULL
 {where}
 ";
+                }
+                else
+                {
+                    query = $@"UPDATE [dbo].[RepresentativesInput]
+SET [IsomorphicBipart] = NULL
+{where}
+";
+                }
                 db.Execute(query);
             }
         }

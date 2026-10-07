@@ -24,7 +24,11 @@ namespace RepresentativesSet
         //-----------------------------------------------------------------------------------
         public override void Execute(int[][] pListOfSet)
         {
-            numberOfElement = pListOfSet.Max(x => x.Max());
+            listOfSet = pListOfSet;
+            listOfSetAsNumber = listOfSet.Select(s => BruteForceRepresentativesBinaryNumbders.ElementNumbersToLongAsBinaryVector(s)).ToArray();
+            if (listOfSet.Any(s => s.Any(e => e >= _fSize)))
+                throw new ArgumentException("Element of set can not be > Length.");
+            numberOfElement = pListOfSet.Max(x => x.Max())+1;
             listOfElements = new List<int>[numberOfElement];
             counterOfSet = new int[pListOfSet.Length];
             for (int i = 0; i < pListOfSet.Length; i++)
@@ -36,6 +40,13 @@ namespace RepresentativesSet
                     listOfElements[e].Add(i);
                 }
             }
+            _inputData = (Newtonsoft.Json.JsonConvert.SerializeObject(listOfSet));
+            _inputDataShort = (Newtonsoft.Json.JsonConvert.SerializeObject(listOfSetAsNumber));
+
+            _fCurrentOptimalSet = _fCurrentSet.ToList();
+            currentMinimum = _fSize;
+            _fOptimalSets = new List<string>();
+
             //listOfSetAsBinary = new int[listOfSet.Length][];
             //for (int i = 0; i < listOfSetAsBinary.Length; i++)
             //{
@@ -56,40 +67,51 @@ namespace RepresentativesSet
         protected override void RemoveAction(int element)
         {
             base.RemoveAction(element);
-            foreach(int i in listOfElements[_fCurrentPosition])
+            if (_fCurrentSet[_fCurrentPosition] == 1)
             {
-                counterOfSet[i] -= 1;
-                if (counterOfSet[i] == 0)
-                    commonCounter--;
+                if (_fCurrentPosition < listOfElements.Length)
+                {
+                    foreach (int i in listOfElements[_fCurrentPosition])
+                    {
+                        counterOfSet[i] -= 1;
+                        if (counterOfSet[i] == 0)
+                            commonCounter--;
+                    }
+                }
             }
         }
         //--------------------------------------------------------------------------------------
         protected override void AddAction(int element)
         {
             base.AddAction(element);
-            foreach (int i in listOfElements[_fCurrentPosition])
+            if (_fCurrentSet[_fCurrentPosition] == 1)
             {
-                counterOfSet[i] += 1;
-                if (counterOfSet[i] == 1)
-                    commonCounter++;
+                if (_fCurrentPosition < listOfElements.Length)
+                {
+
+                    foreach (int i in listOfElements[_fCurrentPosition])
+                    {
+                        counterOfSet[i] += 1;
+                        if (counterOfSet[i] == 1)
+                            commonCounter++;
+                    }
+                }
             }
         }
         //--------------------------------------------------------------------------------------
         protected override void SupplementInitial()
         {
             StatisticAccumulator.CreateStatistics(listOfSet, _inputDataShort, AlgorithmName);
-            _currentCardinality = _fCurrentSet[0];
+            _currentCardinality = 0;
+            AddAction(_fCurrentSet[0]);
         }
         //--------------------------------------------------------------------------------------
         protected override bool MakeAction()
         {
 
-            if (_fCurrentPosition == _fSize - 1)
+            if (commonCounter == counterOfSet.Length && _currentCardinality <= currentMinimum)
             {
-                if (commonCounter == counterOfSet.Length)
-                {
-                    UpdateOptimalResults(_currentCardinality);
-                }
+                UpdateOptimalResults(_currentCardinality);
             }
             return false;
 

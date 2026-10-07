@@ -102,10 +102,10 @@ namespace BioAlgorithmViewModel.Representatives
             }
         }
         //----------------------------------------------------------------------------------------------------------------------
-        private void RefreshRepresentativeAlgorithmGroupListAction()
+        private async void RefreshRepresentativeAlgorithmGroupListAction()
         {
             RepresentativeAlgorithmGroupByDimensions.Clear();
-            List<RepresentativeAlgorithmGroupDimension> algorithms = representativesRepository.GetRepresentativeAlgorithmGroupDimensions(AlgorithmGroupListSort);
+            List<RepresentativeAlgorithmGroupDimension> algorithms = await representativesRepository.GetRepresentativeAlgorithmGroupDimensions(AlgorithmGroupListSort);
             foreach (RepresentativeAlgorithmGroupDimension a in algorithms)
                 RepresentativeAlgorithmGroupByDimensions.Add(a);
         }

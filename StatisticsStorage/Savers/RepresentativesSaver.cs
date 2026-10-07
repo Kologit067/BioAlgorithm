@@ -1,27 +1,28 @@
-﻿using StatisticsStorage.Accumulators;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Dapper;
 using StatisticsStorage.Accumulators.Objects;
+using Representatives.Data;
+using System.Linq;
 
 namespace StatisticsStorage.Savers
 {
     public class RepresentativesSaver
     {
         private string _connectionString;
+        private readonly RepresentativesRepository _representativesRepository;
         public RepresentativesSaver()
         {
  //           _connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["bioalgorithm"].ConnectionString;
             _connectionString = "Data Source=.\\SQLEXPRESS;Initial Catalog=BioAlgorithm;Integrated Security=true";
+            _representativesRepository = new RepresentativesRepository(_connectionString);
         }
 
         public string Save(List<RepresentativesPerfomance> representativesPerfomances)
         {
+            var rp = representativesPerfomances.GroupBy(r => r.InputData).Select(g => new { g.Key, Count = g.Count() }).ToList();
+            var rps = representativesPerfomances.GroupBy(r => r.InputDataShort).Select(g => new { g.Key, Count = g.Count() }).ToList();
             string error = null;
 
             try
@@ -30,6 +31,7 @@ namespace StatisticsStorage.Savers
                 DataTable performance = new DataTable();
                 performance.Columns.Add("NumberOfSet", System.Type.GetType("System.Int32"));
                 performance.Columns.Add("Dimension", System.Type.GetType("System.Int32"));
+                performance.Columns.Add("Step", System.Type.GetType("System.Decimal"));
                 performance.Columns.Add("InputLen", System.Type.GetType("System.String"));
                 performance.Columns.Add("InputLenSort", System.Type.GetType("System.String"));
                 performance.Columns.Add("InputLenAvg", System.Type.GetType("System.Decimal"));
@@ -47,21 +49,21 @@ namespace StatisticsStorage.Savers
                 performance.Columns.Add("BestValue", System.Type.GetType("System.Int64"));
                 performance.Columns.Add("UpdateOptcount", System.Type.GetType("System.Int64"));
                 performance.Columns.Add("ElemenationCount", System.Type.GetType("System.Int64"));
-                performance.Columns.Add("Step", System.Type.GetType("System.Decimal"));
 
                 DataTable solutions = new DataTable();
-                solutions.Columns.Add("Algorithm", System.Type.GetType("System.String"));
+                solutions.Columns.Add("NumberOfSet", System.Type.GetType("System.Int32"));
                 solutions.Columns.Add("Dimension", System.Type.GetType("System.Int32"));
-                solutions.Columns.Add("Limit", System.Type.GetType("System.Int32"));
-                solutions.Columns.Add("InputData", System.Type.GetType("System.String"));
-                solutions.Columns.Add("OutputPresentation", System.Type.GetType("System.String"));
                 solutions.Columns.Add("Step", System.Type.GetType("System.Decimal"));
+                solutions.Columns.Add("InputData", System.Type.GetType("System.String"));
+                solutions.Columns.Add("Algorithm", System.Type.GetType("System.String"));
+                solutions.Columns.Add("OutputPresentation", System.Type.GetType("System.String"));
 
                 foreach (var ps in representativesPerfomances)
                 {
                     performance.Rows.Add(
                         ps.NumberOfSet, 
-                        ps.Dimension, 
+                        ps.Dimension,
+                        ps.Step,
                         ps.InputLen,
                         ps.InputLenSort,
                         (decimal)ps.InputLenAvg,
@@ -78,12 +80,12 @@ namespace StatisticsStorage.Savers
                         ps.CountTerminal, 
                         ps.BestValue, 
                         ps.UpdateOptcount, 
-                        ps.ElemenationCount,
-                        ps.Step);
+                        ps.ElemenationCount
+                        );
 
                     for (int i = 0; i < ps.OptimalSets.Count; i++)
                     {
-                        solutions.Rows.Add(ps.Algorithm, ps.NumberOfSet, ps.Dimension, ps.InputData, ps.OptimalSets[i], ps.Step);
+                        solutions.Rows.Add(ps.NumberOfSet, ps.Dimension, ps.Step, ps.InputData, ps.Algorithm, ps.OptimalSets[i]);
                     }
 
                 }
@@ -119,36 +121,7 @@ namespace StatisticsStorage.Savers
 
         public string Delete(string algorithm, int? numberOfSet = null, int? dimension = null, decimal? step = null)
         {
-            string error = null;
-
-
-            SqlConnection connection = new SqlConnection(_connectionString);
-            connection.Open();
-            try
-            {
-                SqlCommand addCommand = new SqlCommand("dbo.deleteRepresentativesPerfomance", connection);
-                addCommand.CommandType = CommandType.StoredProcedure;
-                addCommand.CommandTimeout = 300;
-                SqlParameter tvpParam2 = addCommand.Parameters.AddWithValue("@Dimension", dimension);
-                tvpParam2.SqlDbType = SqlDbType.VarChar;
-                SqlParameter tvpParam3 = addCommand.Parameters.AddWithValue("@Algorithm", algorithm);
-                tvpParam3.SqlDbType = SqlDbType.VarChar;
-                SqlParameter tvpParam = addCommand.Parameters.AddWithValue("@NumberOfSet", numberOfSet);
-                tvpParam.SqlDbType = SqlDbType.VarChar;
-                SqlParameter tvpParam4 = addCommand.Parameters.AddWithValue("@Step", step);
-                tvpParam4.SqlDbType = SqlDbType.VarChar;
-                addCommand.ExecuteNonQuery();
-            }
-            catch (Exception ex)
-            {
-                error = ex.ToString();
-            }
-            finally
-            {
-                connection.Close();
-            }
-            return error;
-
+            return _representativesRepository.Delete(algorithm, numberOfSet, dimension, step);
         }
 
     }

@@ -47,15 +47,18 @@ namespace RepresentativeServices
                                 IsomorphismMultiGraph algorithm = new IsomorphismMultiGraph(graph1, graph2);
                                 result = algorithm.IsIsomorphic();
                                 if (result)
-                                    representativesRepository.UpdateIsomorphic(itemIn.RepresentativesPerfomanceId, itemOut.InputData);
+                                {
+                                    itemIn.Isomorphic = itemOut.InputData;
+                                    representativesRepository.UpdateIsomorphic(itemIn.RepresentativesPerfomanceId, itemOut.InputData,false);
+                                }
                             }
                             else
-                                representativesRepository.UpdateIsomorphic(itemIn.RepresentativesPerfomanceId, itemIn.InputData);
+                                representativesRepository.UpdateIsomorphic(itemIn.RepresentativesPerfomanceId, itemIn.InputData, false);
                         }
                     }
                 }
             }
-            representativesRepository.CompleteUpdateIsomorphic();
+            representativesRepository.CompleteUpdateIsomorphic(false);
         }
     }
 }
