@@ -1,10 +1,9 @@
-﻿using BioAlgorithmViewModel;
-using BioAlgorithmViewModel.Representatives;
+﻿using BioAlgorithmViewModel.Representatives;
 using BioAlgorithmViewModel.Representatives.Messages;
 using Representatives.Data;
 using System.Windows;
 
-namespace BioAlgorythm.Representative
+namespace BioAlgorithm.Representative
 {
     /// <summary>
     /// Interaction logic for RepresentativeAlgorithmWindow.xaml

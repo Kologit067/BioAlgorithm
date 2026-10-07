@@ -4,10 +4,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
-using BioAlgorithmViewModel.Mappings;
 using BioAlgorithmViewModel.Representatives.Utility;
 using BioAlgorithmViewModel.Representatives.Messages;
-using BioAlgorythmModel.RepresentativesModel;
+using BioAlgorithmModel.RepresentativesModel;
 
 namespace BioAlgorithmViewModel.BipartiteGraphModel
 {

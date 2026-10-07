@@ -1,7 +1,7 @@
 ﻿using BioAlgorithmViewModel.Representatives.Dto;
 using System.Collections.Generic;
 
-namespace BioAlgorythmModel.RepresentativesModel
+namespace BioAlgorithmModel.RepresentativesModel
 {
     public class RepresentativesPerfomanceAsGroup
     {

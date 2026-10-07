@@ -1,6 +1,6 @@
 ﻿using System.Windows.Controls;
 
-namespace BioAlgorythm.Representative
+namespace BioAlgorithm.Representative
 {
     /// <summary>
     /// Interaction logic for RepresentativeControl.xaml

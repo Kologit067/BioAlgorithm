@@ -1,5 +1,5 @@
 ﻿using BioAlgorithmViewModel.Common;
-using BioAlgorythmModel.RepresentativesModel;
+using BioAlgorithmModel.RepresentativesModel;
 using Representatives.Data;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

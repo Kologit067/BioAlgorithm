@@ -2,7 +2,7 @@
 using BioAlgorithmViewModel.Mappings;
 using BioAlgorithmViewModel.Representatives.Messages;
 using BioAlgorithmViewModel.Representatives.Utility;
-using BioAlgorythmModel.RepresentativesModel;
+using BioAlgorithmModel.RepresentativesModel;
 using Representatives.Data;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

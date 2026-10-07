@@ -3,7 +3,7 @@ using System.Configuration;
 using System.Data.SqlClient;
 using System.Data;
 using System.Linq;
-using BioAlgorythmModel.RepresentativesModel;
+using BioAlgorithmModel.RepresentativesModel;
 using Dapper;
 using System;
 using System.Threading.Tasks;

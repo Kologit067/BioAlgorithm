@@ -1,6 +1,6 @@
 ﻿
 
-namespace BioAlgorythmModel.RepresentativesModel
+namespace BioAlgorithmModel.RepresentativesModel
 {
     //public class RepresentativeAlgorithmCompare
     //{

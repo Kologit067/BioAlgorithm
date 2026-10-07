@@ -1,5 +1,5 @@
 ﻿
-namespace BioAlgorythmModel.RepresentativesModel
+namespace BioAlgorithmModel.RepresentativesModel
 {
     //--------------------------------------------------------------------------------------
     // class RepresentativesPerfomanceCompareFilter

@@ -1,7 +1,7 @@
 ﻿using BioAlgorithmViewModel;
 using BioAlgorithmViewModel.Representatives.Messages;
 using BioAlgorithmViewModel.Representatives.Utility;
-using BioAlgorythm.Representative;
+using BioAlgorithm.Representative;
 using FindingRegulatoryMotifs.Enumeration;
 using StatisticsStorage.Accumulators;
 using System;

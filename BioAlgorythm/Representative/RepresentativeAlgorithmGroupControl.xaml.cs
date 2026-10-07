@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Windows.Controls;
+﻿using System.Windows.Controls;
 
-namespace BioAlgorythm.Representative
+namespace BioAlgorithm.Representative
 {
     /// <summary>
     /// Interaction logic for RepresentativeAlgorithmGroupControl.xaml

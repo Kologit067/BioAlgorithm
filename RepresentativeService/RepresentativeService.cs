@@ -1,4 +1,4 @@
-﻿using BioAlgorythmModel.RepresentativesModel;
+﻿using BioAlgorithmModel.RepresentativesModel;
 using GraphLib;
 using Representatives.Data;
 using System;

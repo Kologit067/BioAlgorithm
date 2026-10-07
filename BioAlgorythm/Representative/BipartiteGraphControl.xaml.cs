@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
+﻿using System.Windows.Controls;
 
-namespace BioAlgorythm.Representative
+namespace BioAlgorithm.Representative
 {
     /// <summary>
     /// Interaction logic for BipartiteGraphControl1.xaml
